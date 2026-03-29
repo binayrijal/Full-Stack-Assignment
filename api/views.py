@@ -1,10 +1,11 @@
-from rest_framework.decorators import api_view,permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth.hashers import check_password,make_password
+from django.contrib.auth.hashers import check_password, make_password
 from rest_framework_simplejwt.tokens import RefreshToken
-from api.models import User
+from api.models import User, Property
+from api.serializers import PropertySerializer
 import json
 
 
@@ -13,16 +14,12 @@ def login_user(request):
     data = json.loads(request.body)
     email = data.get("email")
     password = data.get("password")
-    print(f"Login attempt for email: {email}")
-    print(f"Password provided: {password}")
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
         return Response(
             {"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
         )
-    print(f"User found: {user.email}")
-    print(f"Stored password hash: {user.password}")
     if not check_password(password, user.password):
         return Response(
             {"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
@@ -58,7 +55,7 @@ def register_user(request):
             name=name,
             email=email,
             password=make_password(password),  # Use make_password
-            role=role
+            role=role,
         )
         user.save()
 
@@ -68,3 +65,16 @@ def register_user(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_properties(request):
+    try:
+        properties = Property.objects.filter(
+            favourite_set__user=request.user
+        ).distinct()
+        serializer = PropertySerializer(properties, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

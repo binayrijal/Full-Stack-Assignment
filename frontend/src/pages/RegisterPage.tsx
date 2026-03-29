@@ -43,6 +43,15 @@ export function RegisterPage() {
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-bold text-slate-900">Create account</h1>
         <p className="mt-2 text-slate-600">Join as a buyer</p>
+        <Button
+          type="button"
+          variant="secondary"
+          className="mt-6 min-h-12 w-full max-w-sm text-base"
+          onClick={() => navigate("/submit-property")}
+        >
+          List a property first
+        </Button>
+        <p className="mt-2 text-xs text-slate-500">No account required</p>
       </div>
       <form
         onSubmit={handleSubmit}

@@ -117,6 +117,18 @@ export async function fetchMe() {
   return apiFetch<UserProfile>("/api/me", { auth: true });
 }
 
+export async function createProperty(payload: {
+  name: string;
+  description: string;
+  price: string;
+  image: string;
+}) {
+  return apiFetch<Property>("/api/properties", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function fetchCatalog(page: number, pageSize: number) {
   const q = new URLSearchParams({
     page: String(page),

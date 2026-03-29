@@ -9,6 +9,12 @@ Django REST API + React (Vite) frontend for a property buyer: register, login (J
 
 ## Backend (Django)
 
+`Property.image` is a **URL** (e.g. CDN/S3 public URL), not a multipart file upload.
+
+Example image URLs for testing:
+
+- `https://cdn.ankaek.com/res/aok/default_coffee.jpg`
+
 ```bash
 cd /path/to/full_stack_assignment
 python -m venv venv
@@ -28,6 +34,7 @@ API base URL: **http://127.0.0.1:8000/api/**
 | POST | `/api/login` | No | Login → `access`, `refresh`, `user` |
 | GET | `/api/me` | Bearer | Current user `id`, `name`, `email`, `role` |
 | GET | `/api/catalog` | No | Paginated property catalog (`page`, `page_size`) |
+| POST | `/api/properties` | No | Create property (`name`, `description`, `price`, `image` URL) |
 | GET | `/api/favourites` | Bearer | Paginated favourites |
 | POST | `/api/favourites` | Bearer | Toggle like: `property_id`, `liked` (boolean) |
 
@@ -49,6 +56,7 @@ Open **http://localhost:5173**. The dev server proxies `/api` to Django on port 
 2. Sign in at `/login`.
 3. On `/dashboard`, use **Browse catalog** / **My favourites** (on small screens, use the **Browse** / **Saved** bar at the bottom).
 4. Add or remove favourites with the button on each property card. Pagination uses **Previous** / **Next**.
+5. Open **`/submit-property`** to list a new property (no login). Paste an **image URL** (e.g. from your CDN).
 
 ```bash
 npm run build   # production build to frontend/dist
@@ -61,11 +69,12 @@ npm run build   # production build to frontend/dist
 2. **Login** — `POST /api/login` with `{"email":"ada@example.com","password":"longsecret"}` → save `data.access`.
 3. **Profile** — `GET /api/me` with header `Authorization: Bearer <access>`.
 4. **Catalog** — `GET /api/catalog?page=1` (no auth).
-5. **Add favourite** — `POST /api/favourites` with Bearer token and body `{"property_id":1,"liked":true}`.
-6. **List favourites** — `GET /api/favourites?page=1` with Bearer token.
-7. **Remove favourite** — same POST with `"liked":false`.
+5. **Create property** — `POST /api/properties` with JSON `{"name":"…","description":"…","price":"99.00","image":"https://…"}` (no auth).
+6. **Add favourite** — `POST /api/favourites` with Bearer token and body `{"property_id":1,"liked":true}`.
+7. **List favourites** — `GET /api/favourites?page=1` with Bearer token.
+8. **Remove favourite** — same POST with `"liked":false`.
 
-Create sample properties via Django admin (`/admin/`) or shell if the catalog is empty.
+Create sample properties via **`/submit-property`**, the **admin** (`/admin/`), or the API above.
 
 ## Project layout
 

@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
+import { SubmitPropertyPage } from "@/pages/SubmitPropertyPage";
 
 function PageLoading() {
   return (
@@ -44,6 +45,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/submit-property" element={<SubmitPropertyPage />} />
         <Route element={<GuestRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

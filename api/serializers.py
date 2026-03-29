@@ -10,6 +10,29 @@ class PropertySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class CreatePropertySerializer(serializers.ModelSerializer):
+    """Public create — no auth. Expects image as a URL string."""
+
+    class Meta:
+        model = Property
+        fields = ("name", "description", "price", "image")
+
+    def validate_name(self, value):
+        if not (value or "").strip():
+            raise serializers.ValidationError("Name cannot be empty.")
+        return value.strip()
+
+    def validate_description(self, value):
+        if not (value or "").strip():
+            raise serializers.ValidationError("Description cannot be empty.")
+        return value.strip()
+
+    def validate_price(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError("Price must be greater than zero.")
+        return value
+
+
 class UserPublicSerializer(serializers.ModelSerializer):
     """Safe user fields for responses (no password)."""
 

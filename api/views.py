@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from api.models import User, Property, Favourite
 from api.serializers import (
     PropertySerializer,
+    CreatePropertySerializer,
     UserPublicSerializer,
     LoginSerializer,
     RegisterSerializer,
@@ -70,6 +71,24 @@ def current_user(request):
         "Profile loaded",
         UserPublicSerializer(request.user).data,
         status.HTTP_200_OK,
+    )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def create_property(request):
+    serializer = CreatePropertySerializer(data=request.data)
+    if not serializer.is_valid():
+        return api_response(
+            "Validation failed",
+            serializer.errors,
+            status.HTTP_400_BAD_REQUEST,
+        )
+    prop = serializer.save()
+    return api_response(
+        "Property created successfully",
+        PropertySerializer(prop).data,
+        status.HTTP_201_CREATED,
     )
 
 

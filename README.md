@@ -23,7 +23,10 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
 ```
+//For admin
+--->for createsuperuser from folder terminal : python manage.py createsuperuser
 
+--> base_url/admin (eg. base_url localhost:8000/admin)
 API base URL: **http://127.0.0.1:8000/api/**
 
 ### Main endpoints
@@ -34,7 +37,7 @@ API base URL: **http://127.0.0.1:8000/api/**
 | POST | `/api/login` | No | Login → `access`, `refresh`, `user` |
 | GET | `/api/me` | Bearer | Current user `id`, `name`, `email`, `role` |
 | GET | `/api/catalog` | No | Paginated property catalog (`page`, `page_size`) |
-| POST | `/api/properties` | No | Create property (`name`, `description`, `price`, `image` URL) |
+| POST | `/api/properties` | Bearer | Create property (`name`, `description`, `price`, `image` URL) |
 | GET | `/api/favourites` | Bearer | Paginated favourites |
 | POST | `/api/favourites` | Bearer | Toggle like: `property_id`, `liked` (boolean) |
 
@@ -56,7 +59,7 @@ Open **http://localhost:5173**. The dev server proxies `/api` to Django on port 
 2. Sign in at `/login`.
 3. On `/dashboard`, use **Browse catalog** / **My favourites** (on small screens, use the **Browse** / **Saved** bar at the bottom).
 4. Add or remove favourites with the button on each property card. Pagination uses **Previous** / **Next**.
-5. Open **`/submit-property`** to list a new property (no login). Paste an **image URL** (e.g. from your CDN).
+5. From **`/dashboard`**, use **List a new property** (or **`/dashboard/list-property`**) to create a listing. You must be signed in. Paste an **image URL** (e.g. from your CDN).
 
 ```bash
 npm run build   # production build to frontend/dist
@@ -69,12 +72,12 @@ npm run build   # production build to frontend/dist
 2. **Login** — `POST /api/login` with `{"email":"ada@example.com","password":"longsecret"}` → save `data.access`.
 3. **Profile** — `GET /api/me` with header `Authorization: Bearer <access>`.
 4. **Catalog** — `GET /api/catalog?page=1` (no auth).
-5. **Create property** — `POST /api/properties` with JSON `{"name":"…","description":"…","price":"99.00","image":"https://…"}` (no auth).
+5. **Create property** — `POST /api/properties` with Bearer token and JSON `{"name":"…","description":"…","price":"99.00","image":"https://…"}`.
 6. **Add favourite** — `POST /api/favourites` with Bearer token and body `{"property_id":1,"liked":true}`.
 7. **List favourites** — `GET /api/favourites?page=1` with Bearer token.
 8. **Remove favourite** — same POST with `"liked":false`.
 
-Create sample properties via **`/submit-property`**, the **admin** (`/admin/`), or the API above.
+Create sample properties via **`/dashboard/list-property`** in the UI, **admin** (`/admin/`), or the API above.
 
 ## Project layout
 

@@ -16,11 +16,11 @@ export function PropertyCard({
 }: PropertyCardProps) {
   return (
     <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm">
-      <div className="relative aspect-[4/3] w-full bg-slate-100 sm:aspect-video">
+      <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-slate-100">
         <img
           src={property.image}
           alt=""
-          className="h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover object-center"
           loading="lazy"
         />
       </div>

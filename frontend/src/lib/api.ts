@@ -125,6 +125,7 @@ export async function createProperty(payload: {
 }) {
   return apiFetch<Property>("/api/properties", {
     method: "POST",
+    auth: true,
     body: JSON.stringify(payload),
   });
 }

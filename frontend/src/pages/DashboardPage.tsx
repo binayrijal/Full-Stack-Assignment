@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/Button";
 import { PaginationBar } from "@/components/PaginationBar";
@@ -142,14 +142,22 @@ export function DashboardPage() {
                 {user?.email}
               </p>
             </div>
-            <Button
-              type="button"
-              variant="secondary"
-              className="min-h-11 w-full shrink-0 sm:w-auto"
-              onClick={() => logout()}
-            >
-              Log out
-            </Button>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+              <Link
+                to="/dashboard/list-property"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-teal-50 px-4 py-2 text-center text-sm font-semibold text-teal-900 ring-1 ring-teal-200 transition hover:bg-teal-100 sm:w-auto"
+              >
+                List a new property
+              </Link>
+              <Button
+                type="button"
+                variant="secondary"
+                className="min-h-11 w-full shrink-0 sm:w-auto"
+                onClick={() => logout()}
+              >
+                Log out
+              </Button>
+            </div>
           </div>
         </section>
 

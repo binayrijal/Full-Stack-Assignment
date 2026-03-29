@@ -45,13 +45,17 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/submit-property" element={<SubmitPropertyPage />} />
+        <Route
+          path="/submit-property"
+          element={<Navigate to="/dashboard/list-property" replace />}
+        />
         <Route element={<GuestRoute />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dashboard/list-property" element={<SubmitPropertyPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

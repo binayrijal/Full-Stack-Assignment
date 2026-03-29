@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { createProperty } from "@/lib/api";
@@ -49,38 +50,22 @@ export function SubmitPropertyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-2xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+    <AppShell>
+      <div className="mx-auto max-w-2xl">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">List a property</h1>
+            <p className="mt-2 text-slate-600">
+              Submit details and an image URL (e.g. from your CDN). You must be
+              signed in.
+            </p>
+          </div>
           <Link
             to="/dashboard"
-            className="text-lg font-semibold tracking-tight text-teal-800"
+            className="text-sm font-medium text-teal-700 underline-offset-2 hover:underline"
           >
-            Property Buyer
+            ← Back to dashboard
           </Link>
-          <div className="flex flex-wrap gap-3 text-sm font-medium">
-            <Link
-              to="/dashboard"
-              className="text-slate-600 underline-offset-2 hover:text-teal-800 hover:underline"
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/submit-property"
-              className="text-teal-800 underline-offset-2 hover:underline"
-            >
-              List a property
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-900">List a property</h1>
-          <p className="mt-2 text-slate-600">
-            Submit details and an image URL. No account required.
-          </p>
         </div>
 
         <form
@@ -163,6 +148,6 @@ export function SubmitPropertyPage() {
           </Button>
         </form>
       </div>
-    </div>
+    </AppShell>
   );
 }

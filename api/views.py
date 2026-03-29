@@ -75,7 +75,7 @@ def current_user(request):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def create_property(request):
     serializer = CreatePropertySerializer(data=request.data)
     if not serializer.is_valid():

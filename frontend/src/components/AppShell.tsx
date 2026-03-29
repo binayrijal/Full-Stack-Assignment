@@ -22,7 +22,7 @@ export function AppShell({
           </Link>
           <nav className="flex flex-wrap items-center gap-3 text-sm font-medium">
             <Link
-              to="/submit-property"
+              to="/dashboard/list-property"
               className="text-slate-600 underline-offset-2 hover:text-teal-800 hover:underline"
             >
               List a property

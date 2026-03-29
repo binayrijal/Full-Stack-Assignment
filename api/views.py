@@ -1,12 +1,12 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import check_password, make_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from api.models import User, Property, Favourite
 from api.serializers import PropertySerializer
 from api.pagination import CatalogPagination
+from api.responses import api_response
 import json
 
 
@@ -18,21 +18,18 @@ def login_user(request):
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
-        return Response(
-            {"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
-        )
+        return api_response("Invalid credentials", {}, status.HTTP_401_UNAUTHORIZED)
     if not check_password(password, user.password):
-        return Response(
-            {"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
-        )
+        return api_response("Invalid credentials", {}, status.HTTP_401_UNAUTHORIZED)
 
     refresh = RefreshToken.for_user(user)
-    return Response(
+    return api_response(
+        "Login successful",
         {
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         },
-        status=status.HTTP_200_OK,
+        status.HTTP_200_OK,
     )
 
 
@@ -47,8 +44,8 @@ def register_user(request):
         role = data.get("role", "buyer")  # default role if not provided
 
         if User.objects.filter(email=email).exists():
-            return Response(
-                {"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST
+            return api_response(
+                "Email already exists", {}, status.HTTP_400_BAD_REQUEST
             )
 
         # Create user and hash password
@@ -60,12 +57,12 @@ def register_user(request):
         )
         user.save()
 
-        return Response(
-            {"message": "User registered successfully"}, status=status.HTTP_201_CREATED
+        return api_response(
+            "User registered successfully", {}, status.HTTP_201_CREATED
         )
 
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return api_response(str(e), {}, status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET"])
@@ -78,7 +75,17 @@ def catalog_properties(request):
         serializer = PropertySerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
     serializer = PropertySerializer(queryset, many=True)
-    return Response(serializer.data)
+    results = serializer.data
+    return api_response(
+        "Properties fetched successfully",
+        {
+            "count": len(results),
+            "next": None,
+            "previous": None,
+            "results": results,
+        },
+        status.HTTP_200_OK,
+    )
 
 
 @api_view(["GET", "POST"])
@@ -90,62 +97,56 @@ def favourites(request):
                 favourite__user=request.user
             ).distinct()
             serializer = PropertySerializer(properties, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return api_response(
+                "Favourites fetched successfully",
+                {"results": serializer.data},
+                status.HTTP_200_OK,
+            )
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return api_response(
+                str(e), {}, status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     property_id = request.data.get("property_id")
     liked = request.data.get("liked")
 
     if property_id is None or liked is None:
-        return Response(
-            {"error": "property_id and liked are required"},
-            status=status.HTTP_400_BAD_REQUEST,
+        return api_response(
+            "property_id and liked are required",
+            {},
+            status.HTTP_400_BAD_REQUEST,
         )
     if not isinstance(liked, bool):
-        return Response(
-            {"error": "liked must be a boolean"},
-            status=status.HTTP_400_BAD_REQUEST,
+        return api_response(
+            "liked must be a boolean", {}, status.HTTP_400_BAD_REQUEST
         )
     try:
         property_id = int(property_id)
     except (TypeError, ValueError):
-        return Response(
-            {"error": "property_id must be a valid integer"},
-            status=status.HTTP_400_BAD_REQUEST,
+        return api_response(
+            "property_id must be a valid integer",
+            {},
+            status.HTTP_400_BAD_REQUEST,
         )
 
     try:
         prop = Property.objects.get(pk=property_id)
     except Property.DoesNotExist:
-        return Response(
-            {"error": "Property not found"},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+        return api_response("Property not found", {}, status.HTTP_404_NOT_FOUND)
 
     user = request.user
 
     if liked:
         if Favourite.objects.filter(user=user, property=prop).exists():
-            return Response(
-                {"message": "Already liked"},
-                status=status.HTTP_200_OK,
-            )
+            return api_response("Already liked", {}, status.HTTP_200_OK)
         Favourite.objects.create(user=user, property=prop)
-        return Response(
-            {"message": "Added to favourites"},
-            status=status.HTTP_201_CREATED,
+        return api_response(
+            "Added to favourites", {}, status.HTTP_201_CREATED
         )
 
     deleted, _ = Favourite.objects.filter(user=user, property=prop).delete()
     if deleted == 0:
-        return Response(
-            {"message": "Not in favourites"},
-            status=status.HTTP_200_OK,
-        )
-    return Response(
-        {"message": "Removed from favourites"},
-        status=status.HTTP_200_OK,
+        return api_response("Not in favourites", {}, status.HTTP_200_OK)
+    return api_response(
+        "Removed from favourites", {}, status.HTTP_200_OK
     )

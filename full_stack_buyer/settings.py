@@ -44,7 +44,8 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "api.authentication.ApiUserJWTAuthentication",
-    )
+    ),
+    "EXCEPTION_HANDLER": "api.exceptions.api_exception_handler",
 }
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

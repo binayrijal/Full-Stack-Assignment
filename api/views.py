@@ -87,7 +87,7 @@ def favourites(request):
     if request.method == "GET":
         try:
             properties = Property.objects.filter(
-                favourite_set__user=request.user
+                favourite__user=request.user
             ).distinct()
             serializer = PropertySerializer(properties, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)

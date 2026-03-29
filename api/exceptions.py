@@ -3,7 +3,6 @@ from rest_framework.response import Response
 
 
 def api_exception_handler(exc, context):
-    """Wrap DRF errors in {code, message, data}."""
     response = exception_handler(exc, context)
     if response is None:
         return response

@@ -1,22 +1,33 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
-from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from api.models import User, Property, Favourite
-from api.serializers import PropertySerializer
-from api.pagination import CatalogPagination
+from api.serializers import (
+    PropertySerializer,
+    UserPublicSerializer,
+    LoginSerializer,
+    RegisterSerializer,
+)
+from api.pagination import CatalogPagination, FavouritesPagination
 from api.responses import api_response
-import json
 
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def login_user(request):
-    data = json.loads(request.body)
-    email = data.get("email")
-    password = data.get("password")
+    serializer = LoginSerializer(data=request.data)
+    if not serializer.is_valid():
+        return api_response(
+            "Validation failed",
+            serializer.errors,
+            status.HTTP_400_BAD_REQUEST,
+        )
+    email = serializer.validated_data["email"]
+    password = serializer.validated_data["password"]
     try:
-        user = User.objects.get(email=email)
+        user = User.objects.get(email__iexact=email)
     except User.DoesNotExist:
         return api_response("Invalid credentials", {}, status.HTTP_401_UNAUTHORIZED)
     if not check_password(password, user.password):
@@ -28,41 +39,38 @@ def login_user(request):
         {
             "refresh": str(refresh),
             "access": str(refresh.access_token),
+            "user": UserPublicSerializer(user).data,
         },
         status.HTTP_200_OK,
     )
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])  # <-- Allow anyone to register
+@permission_classes([AllowAny])
 def register_user(request):
-    try:
-        data = request.data  # DRF automatically parses JSON
-        name = data.get("name")
-        email = data.get("email")
-        password = data.get("password")
-        role = data.get("role", "buyer")  # default role if not provided
-
-        if User.objects.filter(email=email).exists():
-            return api_response(
-                "Email already exists", {}, status.HTTP_400_BAD_REQUEST
-            )
-
-        # Create user and hash password
-        user = User(
-            name=name,
-            email=email,
-            password=make_password(password),  # Use make_password
-            role=role,
-        )
-        user.save()
-
+    serializer = RegisterSerializer(data=request.data)
+    if not serializer.is_valid():
         return api_response(
-            "User registered successfully", {}, status.HTTP_201_CREATED
+            "Validation failed",
+            serializer.errors,
+            status.HTTP_400_BAD_REQUEST,
         )
+    serializer.save()
+    return api_response(
+        "User registered successfully",
+        {},
+        status.HTTP_201_CREATED,
+    )
 
-    except Exception as e:
-        return api_response(str(e), {}, status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def current_user(request):
+    return api_response(
+        "Profile loaded",
+        UserPublicSerializer(request.user).data,
+        status.HTTP_200_OK,
+    )
 
 
 @api_view(["GET"])
@@ -93,13 +101,26 @@ def catalog_properties(request):
 def favourites(request):
     if request.method == "GET":
         try:
-            properties = Property.objects.filter(
-                favourite__user=request.user
-            ).distinct()
-            serializer = PropertySerializer(properties, many=True)
+            queryset = (
+                Property.objects.filter(favourite__user=request.user)
+                .distinct()
+                .order_by("-id")
+            )
+            paginator = FavouritesPagination()
+            page = paginator.paginate_queryset(queryset, request)
+            if page is not None:
+                serializer = PropertySerializer(page, many=True)
+                return paginator.get_paginated_response(serializer.data)
+            serializer = PropertySerializer(queryset, many=True)
+            results = serializer.data
             return api_response(
                 "Favourites fetched successfully",
-                {"results": serializer.data},
+                {
+                    "count": len(results),
+                    "next": None,
+                    "previous": None,
+                    "results": results,
+                },
                 status.HTTP_200_OK,
             )
         except Exception as e:
